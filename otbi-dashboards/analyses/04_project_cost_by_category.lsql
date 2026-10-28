@@ -1,0 +1,20 @@
+-- Analysis 4: Project cost by period and expenditure category
+-- Subject area: Project Costing - Actuals Real Time
+-- Used for: the project cost page (monthly trend + category bar + top projects).
+-- Folder and column names can differ slightly by release; confirm in the Criteria tab.
+
+SELECT
+   "Time"."Fiscal Period Name"                          s_1,
+   "Project"."Project Number"                           s_2,
+   "Project"."Project Name"                             s_3,
+   "Expenditure Type"."Expenditure Category Name"       s_4,
+   "Expenditure Type"."Expenditure Type Name"           s_5,
+   "Project Organization"."Organization Name"           s_6,
+   "Expenditure Item"."Billable Flag"                   s_7,
+   "Costs"."Raw Cost in Project Currency"               s_8,
+   "Costs"."Burdened Cost in Project Currency"          s_9
+FROM "Project Costing - Actuals Real Time"
+WHERE
+   "Time"."Fiscal Period Name" IN (@{p_periods}['@']{'Jan-26','Feb-26','Mar-26'})
+   AND "Project"."Project Type" NOT IN ('Capital', 'Non Billable')
+ORDER BY 1, 9 DESC

@@ -1,0 +1,21 @@
+-- Analysis 2: GL journal activity by period, journal source and category
+-- Subject area: General Ledger - Journals Real Time
+-- Used for: the GL side of the reconciliation, and to see which sources
+-- (Cost Management, Payables, Receivables, Manual, Spreadsheet) post to an account.
+-- Folder and column names can differ slightly by release; confirm in the Criteria tab.
+
+SELECT
+   "Time"."Accounting Period Name"                 s_1,
+   "Journal Header Details"."Journal Source"       s_2,
+   "Journal Header Details"."Journal Category"     s_3,
+   "Journal Batch Details"."Batch Name"            s_4,
+   "Ledger"."Ledger Name"                          s_5,
+   "Lines"."Accounted Debit"                       s_6,
+   "Lines"."Accounted Credit"                      s_7,
+   "Lines"."Accounted Debit" - "Lines"."Accounted Credit" s_8
+FROM "General Ledger - Journals Real Time"
+WHERE
+   "Ledger"."Ledger Name" = @{p_ledger}{'Primary Ledger'}
+   AND "Time"."Accounting Period Name" IN (@{p_periods}['@']{'Jan-26','Feb-26','Mar-26'})
+   AND "Journal Header Details"."Journal Status" = 'Posted'
+ORDER BY 1, 2, 3

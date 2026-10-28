@@ -1,0 +1,28 @@
+-- Analysis 3: Open Payables invoices with aging buckets
+-- Subject area: Payables Invoices - Transactions Real Time
+-- Used for: the AP aging dashboard page (bucket bar chart + supplier table).
+-- Aging is calculated in logical SQL with TIMESTAMPDIFF against today.
+-- Folder and column names can differ slightly by release; confirm in the Criteria tab.
+
+SELECT
+   "Business Unit"."Business Unit Name"            s_1,
+   "Supplier"."Supplier Name"                      s_2,
+   "Invoice Details"."Invoice Number"              s_3,
+   "Invoice Details"."Invoice Type"                s_4,
+   "Invoice Details"."Invoice Date"                s_5,
+   "Invoice Installment Details"."Due Date"        s_6,
+   TIMESTAMPDIFF(SQL_TSI_DAY, "Invoice Installment Details"."Due Date", CURRENT_DATE) s_7,
+   CASE
+      WHEN TIMESTAMPDIFF(SQL_TSI_DAY, "Invoice Installment Details"."Due Date", CURRENT_DATE) <= 0 THEN '1. Current'
+      WHEN TIMESTAMPDIFF(SQL_TSI_DAY, "Invoice Installment Details"."Due Date", CURRENT_DATE) <= 30 THEN '2. 1-30 days'
+      WHEN TIMESTAMPDIFF(SQL_TSI_DAY, "Invoice Installment Details"."Due Date", CURRENT_DATE) <= 60 THEN '3. 31-60 days'
+      WHEN TIMESTAMPDIFF(SQL_TSI_DAY, "Invoice Installment Details"."Due Date", CURRENT_DATE) <= 90 THEN '4. 61-90 days'
+      ELSE '5. Over 90 days'
+   END                                             s_8,
+   "Invoice Installment Details"."Unpaid Amount"   s_9
+FROM "Payables Invoices - Transactions Real Time"
+WHERE
+   "Invoice Installment Details"."Unpaid Amount" <> 0
+   AND "Invoice Details"."Cancelled Flag" = 'N'
+   AND ("Business Unit"."Business Unit Name" IN (@{p_bu}['@']{'%'}) OR @{p_bu}{'%'} = '%')
+ORDER BY 8, 2

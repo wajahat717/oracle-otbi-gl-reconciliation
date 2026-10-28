@@ -1,0 +1,26 @@
+-- Analysis 1: Cost Accounting distributions sent to the GL, by period and GL batch
+-- Subject area: Costing - Cost Accounting Real Time
+-- Used for: tying one balance sheet account between Cost Accounting and the GL
+--
+-- Filters come from the case study fixes:
+--   period list instead of a date range, no adjusting periods, transferred lines only.
+-- Paste into: Analysis > Advanced tab > "SQL Issued" (or New Analysis > Create Analysis from Simple Logical SQL).
+-- Folder and column names can differ slightly by release. If a column errors,
+-- rebuild it from the Criteria tab and keep the filters below.
+
+SELECT
+   "Accounting Period"."Accounting Period Name"                     s_1,
+   "Cost Accounting Distributions Details"."GL Batch Name"          s_2,
+   "Account"."Account Code"                                         s_3,
+   "Cost Accounting Distributions Details"."GL Transfer Status"     s_4,
+   "Purchase Order"."PO Number"                                     s_5,
+   "Purchase Order"."Line Number"                                   s_6,
+   ROUND("Cost Accounting Distributions Details"."Ledger Amount", 2) s_7
+FROM "Costing - Cost Accounting Real Time"
+WHERE
+   "Account"."Account Code" = @{p_account}{'00000'}
+   AND "Accounting Period"."Accounting Period Name" IN (@{p_periods}['@']{'Jan-26','Feb-26','Mar-26'})
+   AND "Accounting Period"."Accounting Period Name" NOT LIKE '%ADJ%'
+   AND "Cost Accounting Distributions Details"."GL Transfer Status" = 'Yes'
+ORDER BY 1, 2
+FETCH FIRST 500000 ROWS ONLY
